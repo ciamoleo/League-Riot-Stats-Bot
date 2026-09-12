@@ -1,105 +1,122 @@
-# League Riot Stats Bot
+League Riot Stats Bot
+An educational C# / .NET project that integrates with the Riot Games API to fetch League of Legends player data, match history, and performance statistics. The long-term goal of the project is a full integration with a Discord Bot for automated match analytics and banter.
 
-An educational C# project that uses the Riot Games API to retrieve League of Legends player data, match history, and match statistics. Discord Bot integration is planned as the next stage of development.
+Overview
+The application communicates with the Riot Games API using the following data flow:
 
-## Project Overview
+Riot ID (GameName#TagLine)
+└──> PUUID
+└──> Recent Match IDs
+└──> Match Details
+└──> Player Statistics & Sabotage Metrics
 
-The application currently communicates with the Riot Games API and follows this data flow:
+This project serves as a hands-on learning playground for practical modern C# and .NET concepts, including asynchronous programming, dependency injection, and REST API consumption.
 
-```text
-Riot ID
-→ PUUID
-→ Match IDs
-→ Match details
-→ Player statistics
-The project is being developed to learn practical C#/.NET application development, API integration, JSON deserialization, object-oriented programming, and dependency injection.
+Features
+[x] Fetch Riot account data by Riot ID (GameName + TagLine)
 
-Current Features
-Retrieve a League of Legends account using Riot ID.
-Retrieve the player's PUUID.
-Retrieve recent match IDs.
-Retrieve detailed information about a selected match.
-Deserialize Riot API responses into C# models.
-Find a specific player in a match by PUUID.
-Read basic statistics such as kills, deaths, assists, champion, and win status.
-Technologies
-C#
-.NET 10
-Riot Games API
-HttpClient
+[x] Resolve account PUUID
+
+[x] Fetch recent Match IDs for a specific player
+
+[x] Download and parse comprehensive Match Details
+
+[x] Strongly-typed JSON deserialization using System.Text.Json
+
+[x] Extract individual participant statistics:
+
+Kills / Deaths / Assists (KDA)
+
+Champion played
+
+Win / Loss outcome
+
+Damage dealt and kill participation
+
+Tech Stack
+Language: C#
+
+Framework: .NET 10
+
+API: Riot Games REST API
+
+Libraries & Tools:
+
+HttpClient (Factory pattern / Dependency Injection)
+
 System.Text.Json
+
 Microsoft.Extensions.Configuration.Json
-Asynchronous programming with async and await
-Object-oriented programming
-Constructor-based dependency injection
-Project Structure
+
+Architecture & Project Structure
 RiotAPIConsole/
-├── Program.cs
-├── RiotApiClient.cs
-├── ApiEndpoints.cs
-├── Player.cs
-├── MatchModel.cs
-└── appsettings.json
-Architecture
-Program.cs
+├── Program.cs          # App bootstrapping, DI setup, and configuration
+├── RiotApiClient.cs    # Riot API HTTP communication, validation, and serialization
+├── ApiEndpoints.cs     # Centralized routing & URL builder for Riot API endpoints
+├── Player.cs           # DTO / Model for Riot Account data
+├── MatchModel.cs       # Strongly typed models for match payloads & participant stats
+└── appsettings.json    # Local app configuration (git-ignored secrets)
 
-Responsible for application startup, configuration, object creation, and testing the application flow.
+Component Breakdown
+Program.cs — Application entry point; initializes configuration, registers dependencies, and coordinates execution flow.
 
-RiotApiClient.cs
+RiotApiClient.cs — Encapsulates raw HTTP calls to Riot endpoints, handles response status checks, and manages deserialization.
 
-Responsible for communication with the Riot Games API, HTTP requests, response validation, and JSON deserialization.
+ApiEndpoints.cs — Provides constants and formatting logic for regional routing and endpoint URIs.
 
-ApiEndpoints.cs
+Player.cs & MatchModel.cs — Map raw JSON responses into C# domain objects.
 
-Contains reusable Riot API endpoint paths.
+Getting Started
+Prerequisites
+.NET 10 SDK or newer
 
-Player.cs
+A valid Riot Games Developer API Key
 
-Represents account data returned by the Riot Account API.
+Configuration
+Create an appsettings.json file inside the RiotAPIConsole/ directory:
 
-MatchModel.cs
-
-Represents match data and participant statistics.
-
-Example Configuration
-Create a local appsettings.json file:
-
+JSON
 {
   "Riot": {
-    "ApiKey": "YOUR_RIOT_API_KEY"
+    "ApiKey": "RGAPI-YOUR-API-KEY-HERE"
   }
 }
-The API key must not be committed to the repository.
+Warning: Never commit your API key to a public repository. Ensure appsettings.json (or user secrets) is listed in your .gitignore.
 
-Running the Project
+Build & Run
+Restore dependencies:
 dotnet restore
-dotnet run
+
+Run the console project:
+dotnet run --project RiotAPIConsole
+
 Learning Objectives
-This project focuses on learning:
+This repository tracks hands-on progress in modern backend C# development:
 
-C# classes, objects, fields, properties, and constructors.
-Access modifiers such as private, public, and internal.
-The purpose of readonly and static.
-Asynchronous programming with Task, async, and await.
-Dependency injection through constructors.
-HTTP communication using HttpClient.
-JSON deserialization using System.Text.Json.
-Working with nested JSON objects and lists.
-Separating application logic into dedicated classes.
-Handling API errors and invalid responses.
+Core OOP: Classes, encapsulation, access modifiers (private, internal, public), and immutability (readonly).
+
+Asynchronous Patterns: Efficient I/O-bound operations using Task, async, and await.
+
+Clean Code & Architecture: Separation of concerns, Single Responsibility Principle (SRP), and constructor-based Dependency Injection.
+
+Resilient API Consumption: Proper HttpClient usage, handling transient HTTP errors, rate-limiting awareness, and robust JSON parsing.
+
 Roadmap
-Complete match model deserialization.
-Extract player statistics from a selected match.
-Add rank and summoner information.
-Improve exception handling.
-Move API communication into a reusable class library.
-Create a Discord Bot using Discord.Net.
-Add Discord commands for player and match statistics.
-Add support for multiple Riot routing regions.
+[ ] Complete full payload mapping for MatchModel (challenges, building damage, vision scores)
+
+[ ] Add summoner rank, tier, and LP lookup via the League-v4 endpoint
+
+[ ] Implement custom metrics (e.g., Int Rate / Sabotage Indicator formula)
+
+[ ] Extract API interactions into a dedicated, reusable Class Library (.dll)
+
+[ ] Implement Discord Bot integration via Discord.Net
+
+[ ] Build slash commands (/stats, /int-check, /last-match)
+
+[ ] Support multi-region routing (Americas, Europe, Asia)
+
 Security
-Never commit Riot API keys to GitHub.
+Keep Riot development API keys private; regenerate them immediately if leaked.
 
-Development API keys can expire and should be regenerated if they are exposed. Store secrets locally using an ignored configuration file, environment variables, or a secret management system.
-
-Project Status
-This project is currently under development and is primarily used as a practical learning project for C# and .NET development. ```
+Use User Secrets (dotnet user-secrets) or environment variables for production and secret storage.
