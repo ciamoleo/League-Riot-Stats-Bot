@@ -41,15 +41,13 @@ RiotAPIConsole/
 ├── Player.cs
 ├── MatchModel.cs
 └── appsettings.json
-Program.cs - Responsible for application startup, configuration, object creation, and testing the application flow.
+```
 
-RiotApiClient.cs - Responsible for communication with the Riot Games API, HTTP requests, response validation, and JSON deserialization.
-
-ApiEndpoints.cs - Contains reusable Riot API endpoint paths.
-
-Player.cs - Represents account data returned by the Riot Account API.
-
-MatchModel.cs - Represents match data and participant statistics.
+* **`Program.cs`** - Responsible for application startup, configuration, object creation, and testing the application flow.
+* **`RiotApiClient.cs`** - Responsible for communication with the Riot Games API, HTTP requests, response validation, and JSON deserialization.
+* **`ApiEndpoints.cs`** - Contains reusable Riot API endpoint paths.
+* **`Player.cs`** - Represents account data returned by the Riot Account API.
+* **`MatchModel.cs`** - Represents match data and participant statistics.
 
 Example Configuration
 Create a local appsettings.json file in the root of your project:
