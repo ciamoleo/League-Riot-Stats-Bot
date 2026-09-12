@@ -1,5 +1,3 @@
-Proszę bardzo. Wyrzucamy emotki, ma być czysto, technicznie i konkretnie. Masz tu surowy kod do skopiowania. Wklej to na GitHuba i masz gotowe.
-
 Markdown
 # League Riot Stats Bot
 
