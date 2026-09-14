@@ -97,11 +97,11 @@ Handling API errors and invalid responses.
 - [x] Retrieved detailed information about a selected match.
 - [x] Deserialized match JSON into `MatchModel`.
 - [x] Mapped match participants and basic statistics.
++ [x] Improve error handling and validation.
 
 ### In Progress
 - [ ] Find the selected player inside the match by PUUID.
 - [ ] Display the player's champion, K/D/A, and match result.
-- [ ] Improve error handling and validation.
 - [ ] Refactor the test workflow in `Program.cs`.
 
 ### Planned
@@ -112,7 +112,8 @@ Handling API errors and invalid responses.
 - [ ] Add Discord commands for player and match statistics.
 - [ ] Add match analysis features such as KDA, win rate, and sabotage/int indicators.
 
-Security
-Never commit Riot API keys to GitHub.
+# Security
+
+Never commit Riot API keys to GitHub. 
 
 Development API keys can expire and should be regenerated if they are exposed. Store secrets locally using an ignored configuration file (appsettings.json in .gitignore), environment variables, or a secret management system.
