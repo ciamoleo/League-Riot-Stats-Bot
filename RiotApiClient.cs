@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using RiotAPIConsole;
+using System.Diagnostics;
+using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
 using System.Xml.Schema;
@@ -17,35 +19,38 @@ namespace RiotAPIConsole
         public RiotApiClient(HttpClient httpClient, string apiKey)
         {
             _httpClient = httpClient;
-                   _apiKey = apiKey
-            ?? throw new Exception("Brak Klucza API");
+            _apiKey = apiKey;
         }
 
         public async Task<string> GetPlayerPuuidAsync(string gameName, string tagLine)
         {
-            string endpoint 
+            string endpoint
                 = $"{BaseUrl}{_endpoints.AccountByRiotId}{gameName}/{tagLine}?api_key={_apiKey}";
 
-            HttpResponseMessage response 
+            HttpResponseMessage response
                 = await _httpClient.GetAsync(endpoint);
+
+            EnsureResponseIsValid(response);
+
+            if (response.StatusCode == HttpStatusCode.NotFound)
+            {
+                throw new PlayerNotFoundException(
+                    gameName,
+                    tagLine);
+            }
+
             if (!response.IsSuccessStatusCode)
             {
-                throw new Exception($"Błąd: {response.StatusCode}");
+                throw new ApiConnectionFailed(response.StatusCode.ToString());
             }
-            else
+            string accountJson
+                = await response.Content.ReadAsStringAsync();
+            Player? player = JsonSerializer.Deserialize<Player>(accountJson);
+            if (player == null)
             {
-                string accountJson
-                    = await response.Content.ReadAsStringAsync();
-                Player? player = JsonSerializer.Deserialize<Player>(accountJson);
-                if (player == null)
-                {
-                    throw new Exception("Błąd, nie udało się znaleźć gracza.");
-                }
-                else
-                {
-                    return player.Puuid;
-                }
+                throw new DeserializationProblemException();
             }
+            return player.Puuid;
         }
         public async Task<List<string>> GetPlayerMatchListAsync(string puuid)
         {
@@ -53,26 +58,27 @@ namespace RiotAPIConsole
                 = $"{BaseUrl}{_endpoints.MatchListByPuuid}{puuid}/ids?count=5&api_key={_apiKey}";
             HttpResponseMessage response
                 = await _httpClient.GetAsync(endpoint);
-            if (!response.IsSuccessStatusCode)
+
+            EnsureResponseIsValid(response);
+            if (response.StatusCode == HttpStatusCode.NotFound)
             {
-                throw new Exception($"Błąd przy połączeniu {response.StatusCode}");
+                throw new MatchNotFoundException(puuid);
             }
-            else
+
+            string matchListJson
+                = await response.Content.ReadAsStringAsync();
+            List<string>? matchList = JsonSerializer.Deserialize<List<string>>(matchListJson);
+            if (matchList == null)
             {
-                string matchListJson
-                    = await response.Content.ReadAsStringAsync();
-                List<string>? matchList = JsonSerializer.Deserialize<List<string>>(matchListJson);
-                if (matchList == null)
-                {
-                    throw new Exception($"Błąd, nie udało się znaleźć meczów.");
-                }
-                else
-                {
-                  return matchList;
-                }
+                throw new DeserializationProblemException();
             }
+            if (matchList.Count == 0)
+            {
+                throw new MatchNotFoundException("Nie udało się znaleźć meczów.");
+            }
+            return matchList;
         }
-        public async Task<MatchModel> GetMatchInfoJsonAsync(string matchId)
+        public async Task<MatchModel> GetMatchInfoAsync(string matchId)
         {
             string endpoint =
                 $"{BaseUrl}{_endpoints.MatchInfo}{matchId}?api_key={_apiKey}";
@@ -80,25 +86,35 @@ namespace RiotAPIConsole
             HttpResponseMessage response =
                 await _httpClient.GetAsync(endpoint);
 
-            if (!response.IsSuccessStatusCode)
+            EnsureResponseIsValid(response);
+            if (response.StatusCode == HttpStatusCode.NotFound)
             {
-                throw new Exception($"Błąd: {response.StatusCode}");
+                throw new MatchNotFoundException($"");
             }
 
             string rawMatchJson
                 = await response.Content.ReadAsStringAsync();
-            
+
             MatchModel? matchModel = JsonSerializer.Deserialize<MatchModel>(rawMatchJson);
 
-            if ( matchModel == null )
+            if (matchModel == null)
             {
-                throw new Exception("Nie udało się zdeserializować meczu.");
+                throw new DeserializationProblemException();
             }
             return matchModel;
         }
-        //public async Task<double> CalculateKDA(string matchId, string puuid)
-        //{
-        //    await GetMatchInfoJsonAsync();
-        //}
+        private void EnsureResponseIsValid(HttpResponseMessage response)
+        {
+            switch (response.StatusCode)
+            {
+                case HttpStatusCode.Forbidden: // 403
+                    throw new ApiKeyNotFoundException();
+
+                case HttpStatusCode.Unauthorized: // 401
+                    throw new ApiKeyNotFoundException();
+                case HttpStatusCode.TooManyRequests: //429
+                    throw new RateLimitException();
+            }
+        }
     }
 }
